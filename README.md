@@ -8,6 +8,8 @@
   - Candidate must fork this repository to a public repo under their name for submission. Notify email `hr@riverflow.solutions` when done.
   - The repository must be public and accessible to the public.
   - Mark the "Review Criteria" items as done when you have completed the requirements.
+  - **Note**: If you are concerned about others copying your assignment, you may choose to push your code only on the deadline day. Please note, however, that we check the commit log history to verify contributions.
+
 
 - Build a **multi-organization Task Management backend** (organizations → projects → tasks) with basic collaboration and notifications.  
 - **Stack**: Python, FastAPI, PostgreSQL, Redis, Nginx.
