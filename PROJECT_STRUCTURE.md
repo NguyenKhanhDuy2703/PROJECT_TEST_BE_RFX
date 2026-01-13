@@ -10,7 +10,7 @@ be-assignment.jan-2026/
 ├── requirements.txt
 ├── Dockerfile
 ├── docker-compose.yml
-├── alembic.ini
+├── alembic.ini # Alembic configuration file
 │
 ├── app/                          # Main application package
 │   ├── __init__.py
@@ -26,8 +26,8 @@ be-assignment.jan-2026/
 │   │
 │   ├── db/                        # Database setup
 │   │   ├── __init__.py
-│   │   ├── base.py                # Base model class
-│   │   └── session.py              # Database session management
+│   │   ├── base.py                # Base model class ( chứa dữ liệu chung cho các model)
+│   │   └── session.py              # Database session management ( quản lý phiên làm việc với DB)
 │   │
 │   ├── models/                    # SQLAlchemy models
 │   │   ├── __init__.py
