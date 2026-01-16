@@ -10,5 +10,5 @@ class Comment (Base):
     content = Column(String, nullable=False)
     created_at = Column(TIMESTAMP, nullable=False)
     updated_at = Column(TIMESTAMP, nullable=True)
-    task = relationship("Task", back_populates="comments")
-    user = relationship("User", back_populates="comments")
+    task = relationship("Task", back_populates="comments_task")
+    user = relationship("User", back_populates="comments_user")

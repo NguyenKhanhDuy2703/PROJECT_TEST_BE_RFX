@@ -6,4 +6,5 @@ class Organization(Base):
     org_id = Column (Integer, primary_key=True, index=True)
     name = Column(String, unique=True, index=True, nullable=False)
     created_at = Column(TIMESTAMP, nullable=False)
-    user = relationship("User", back_populates="organization")
+    users = relationship("User", back_populates="organization")
+    projects = relationship("Project", back_populates="organization")

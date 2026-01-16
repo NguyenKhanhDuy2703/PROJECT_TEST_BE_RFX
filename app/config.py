@@ -6,6 +6,9 @@ class Settings(BaseSettings):
     POSTGRES_SERVER : str = "localhost"
     POSTGRES_PORT : str = "5432"
     POSTGRES_DB : str = "rfx_db"
+    SECRET_KEY: str = "NKD"
+    ALGORITHM: str = "HS256"
+    EXPIRE_TOKEN_MINUTES: int = 30
     print("Configuration settings loaded successfully.")
     @property
     def DATABASE_URL(self) -> str:

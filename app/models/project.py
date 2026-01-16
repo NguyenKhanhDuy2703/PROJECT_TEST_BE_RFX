@@ -10,3 +10,5 @@ class Project(Base):
     description = Column(String, nullable=True)
     created_at = Column(TIMESTAMP, nullable=False)
     organization = relationship("Organization", back_populates="projects")
+    project_members = relationship("Project_member", back_populates="project")
+    tasks = relationship("Task", back_populates="project")

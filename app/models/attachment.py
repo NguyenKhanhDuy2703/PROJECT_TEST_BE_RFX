@@ -11,5 +11,5 @@ class Attachment (Base):
     file_url = Column(String, nullable=False)
     file_size = Column(Integer, nullable=False)
     uploaded_at = Column(TIMESTAMP, nullable=False)
-    task = relationship("Task", back_populates="attachments")
-    user = relationship("User", back_populates="attachments")
+    task = relationship("Task", back_populates="attachments_task")
+    user = relationship("User", back_populates="attachments_user")

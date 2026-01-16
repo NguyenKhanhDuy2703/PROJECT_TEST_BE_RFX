@@ -16,4 +16,7 @@ class User(Base):
     password_hash = Column(String, nullable=False)
     full_name = Column(String, nullable=False)
     created_at = Column(TIMESTAMP, nullable=False)
-    organization = relationship("Organization", back_populates="users")
+    organization = relationship("Organization", back_populates="users" )
+    project_members = relationship("Project_member", back_populates="user")
+    attachments_user = relationship("Attachment", back_populates="user")
+    comments_user = relationship("Comment", back_populates="user")
