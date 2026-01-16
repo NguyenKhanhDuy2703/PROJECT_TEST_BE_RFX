@@ -21,3 +21,5 @@ class Task (Base) :
     create_at = Column (TIMESTAMP, nullable=False)
     updated_at = Column (TIMESTAMP, nullable=True)
     project = relationship("Project", back_populates="tasks")
+    attachments_task = relationship("Attachment", back_populates="task")
+    comments_task = relationship("Comment", back_populates="task")

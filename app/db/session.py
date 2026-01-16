@@ -1,10 +1,13 @@
-from sqlalchemy.ext.declarative import create_async_engine , AsyncSession
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
 from app.config import settings
 
 engine = create_async_engine (
     settings.DATABASE_URL,
     echo = True,
+    pool_pre_ping = True,
+    pool_size = 10,
+    max_overflow = 20,
 )
 AsyncSessionLocal = sessionmaker (
     bind = engine,
@@ -19,5 +22,6 @@ async def get_db() :
         except Exception as e :
             print ("Database session error : " , e)
             await session.rollback()
+            raise e
         finally :
             await session.close()
