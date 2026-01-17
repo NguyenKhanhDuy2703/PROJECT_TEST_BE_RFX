@@ -10,7 +10,7 @@ router = APIRouter(
 def get_user_service(db : AsyncSession =Depends(get_db) ) -> Org_service :
     return Org_service (db)
 
-@router.get("/create" )
+@router.post("/create" , status_code=status.HTTP_200_OK )
 async def create_org(
     org_create: OrgCreate ,
     org_service: Org_service = Depends(get_user_service),

@@ -5,6 +5,7 @@ from app.schemas.user_schema import UserCreate
 from app.schemas.org_schema import OrgRead
 from datetime import datetime
 from sqlalchemy import select 
+from datetime import timezone
 from app.core.security import get_password_hash , verify_password
 class User_service:
     def __init__(self  , db: AsyncSession):
@@ -26,7 +27,7 @@ class User_service:
             password_hash=hashed_password, 
             full_name=user_create.full_name,
             role=user_create.role.upper(),
-            created_at=datetime.utcnow()
+            created_at = datetime.now(timezone.utc).replace(tzinfo=None)
             )
         self.db.add(new_user)
         await self.db.commit()
