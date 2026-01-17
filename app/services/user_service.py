@@ -20,7 +20,6 @@ class User_service:
         if not org :
             raise Exception ("Organization does not exist " )
         hashed_password = get_password_hash (user_create.password)
-        print (hashed_password)
         new_user = User(
             org_id = user_create.org_id,
             email=user_create.email,

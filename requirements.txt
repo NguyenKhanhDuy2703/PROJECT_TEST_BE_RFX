@@ -1,31 +1,30 @@
 # --- Core Framework ---
-fastapi==0.109.0
-uvicorn[standard]==0.27.0
+fastapi==0.110.0
+uvicorn[standard]==0.27.1
 python-dotenv==1.0.1
-python-multipart==0.0.6  # Để upload file
+python-multipart==0.0.9     
 
 # --- Database & Models ---
-sqlalchemy==2.0.25
+sqlalchemy==2.0.27
 alembic==1.13.1
-asyncpg==0.29.0          # Driver PostgreSQL (Async)
-pydantic==2.6.0
-pydantic-settings==2.1.0
+asyncpg==0.29.0             
+pydantic==2.6.1
+pydantic-settings==2.2.0
+email-validator==2.1.1       
 
 # --- Authentication & Security ---
 pyjwt==2.8.0
 passlib[bcrypt]==1.7.4
+bcrypt==4.1.2                
 
 # --- Services ---
-redis==5.0.1             # Kết nối Redis
+redis==5.0.1                 #
+# --- Networking & Testing ---
+httpx==0.27.0               
+pytest==8.0.1
+pytest-asyncio==0.23.5
 
-# --- MCP & AI Agent (Yêu cầu nâng cao) ---
-# Chọn 1 trong 2 hoặc cả 2 tùy giải pháp bạn chọn
-# mcp==0.1.0               
+# --- MCP & AI Agent (Optional - Uncomment khi dùng) ---
 # langchain==0.1.0
 # langchain-community==0.0.10
-# langchain-openai==0.0.2  # Hoặc langchain-groq nếu dùng Groq
-# httpx==0.26.0            # Để gọi API
-
-# --- Testing ---
-pytest==8.0.0
-pytest-asyncio==0.23.5
+# langchain-openai==0.0.2
