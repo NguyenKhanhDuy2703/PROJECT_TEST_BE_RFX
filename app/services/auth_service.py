@@ -15,20 +15,4 @@ class Auth_service:
         user.access_token = token_data
         user.token_type = "bearer"
         return user
-    async def verify_token (self , token: str ) -> dict :
-        try :
-            payload =  decode_access_token (token )
-            if not payload :
-                raise Exception ("Invalid token " )
-            user_id = payload.get ("user_id" )
-            if not user_id :
-                raise Exception("Token payload missing user info")
-            query = await self.db.execute (select (User).where (User.user_id == user_id ) )
-            user = query.scalars().first()
-            if not user :
-                raise Exception ("User not found " )
-            
-            return user
-        except Exception as e:
-            print(f"DEBUG ERROR verify_token: {e}")
-            raise e
+  

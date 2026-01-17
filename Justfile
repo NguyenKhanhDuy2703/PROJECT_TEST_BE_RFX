@@ -4,6 +4,9 @@ install :
     @echo "Building the project..."
     # Add your build commands here
     pip install -r requirements.txt
+build :
+    @echo "Building the Docker image..."
+    docker build -t fastapi-app .
 up : 
     @echo "Starting database and redis services  using Docker..."
     docker-compose -f docker-compose.yml up -d
