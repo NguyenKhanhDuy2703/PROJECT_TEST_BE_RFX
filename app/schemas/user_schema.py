@@ -14,10 +14,6 @@ class UserCreate(UserBase):
 class UserRead(UserBase):
     user_id: int
     role: str
-    access_token: str
-    created_at: datetime
-
-class UserUpdate(BaseModel):
     full_name: Optional[str] = None
     password: Optional[str] = None
     
@@ -27,3 +23,9 @@ class UserResponse(UserBase):
 class UserLogin(BaseModel):
     email: EmailStr
     password: str
+class TokenData(BaseModel):
+    user_id: Optional[int] = None
+    email: Optional[EmailStr] = None
+    role: Optional[str] = None
+    access_token: str
+    token_type: str

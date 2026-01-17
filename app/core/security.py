@@ -3,7 +3,7 @@ from typing import Optional
 import jwt 
 from passlib.context import CryptContext
 from app.config import settings
-
+from datetime import timezone
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def get_password_hash(password: str) -> str:
@@ -15,9 +15,9 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 def create_access_token(data : dict , expire : Optional[timedelta] = None) -> str: 
     to_encode = data.copy()
     if expire:
-        expire_time = datetime.utcnow() + expire
+         expire_time = datetime.now(timezone.utc).replace(tzinfo=None) + expire
     else:
-        expire_time = datetime.utcnow() + timedelta(settings.EXPIRE_TOKEN_MINUTES)
+       expire_time = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(minutes=settings.EXPIRE_TOKEN_MINUTES)
     
     to_encode.update({"exp": expire_time})
     encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
