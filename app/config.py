@@ -6,6 +6,8 @@ class Settings(BaseSettings):
     POSTGRES_SERVER : str = "localhost"
     POSTGRES_PORT : str = "5432"
     POSTGRES_DB : str = "rfx_db"
+    REDIS_HOST: str = "localhost" 
+    REDIS_PORT: int = 6379
     SECRET_KEY: str = "NKD"
     ALGORITHM: str = "HS256"
     EXPIRE_TOKEN_MINUTES: int = 30

@@ -20,3 +20,4 @@ class User(Base):
     project_members = relationship("Project_member", back_populates="user")
     attachments_user = relationship("Attachment", back_populates="user")
     comments_user = relationship("Comment", back_populates="user")
+    notifications = relationship("Notification", back_populates="recipient")
