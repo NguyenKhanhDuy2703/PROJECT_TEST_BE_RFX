@@ -5,7 +5,9 @@ from app.api.v1 import org
 from app.api.v1 import project
 from app.api.v1 import task
 from app.api.v1 import comment
-
+from app.api.v1 import attachment
+from app.api.v1 import report
+from app.api.v1 import notification
 from fastapi.exceptions import RequestValidationError
 from fastapi import HTTPException , Depends , status , APIRouter
 from sqlalchemy import text
@@ -28,6 +30,9 @@ app.include_router(org.router)
 app.include_router(project.router)
 app.include_router(task.router)
 app.include_router(comment.router)
+app.include_router(attachment.router)
+app.include_router(report.router)
+app.include_router(notification.router)
 
 app.add_exception_handler(Exception, global_exception_handler)
 app.add_exception_handler(HTTPException, http_exception_handler)

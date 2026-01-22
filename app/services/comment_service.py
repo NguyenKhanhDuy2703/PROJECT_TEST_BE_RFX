@@ -8,7 +8,7 @@ from app.models.task import Task
 from app.models.project_member import Project_member
 from app.schemas.comment_schema import CommentCreate 
 from app.models.user import User
-
+from app.models.attachment import Attachment
 class CommentService:
     def __init__(self, db: AsyncSession):   
         self.db = db
@@ -41,3 +41,6 @@ class CommentService:
         await self.db.refresh(new_comment)
         
         return new_comment
+    async def upload_attachment( self, comment_id: int, file_path: str , current_user: User) -> Attachment:
+        
+        pass
