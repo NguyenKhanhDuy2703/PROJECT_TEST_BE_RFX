@@ -29,3 +29,6 @@ run :
 test :
     @echo "Running tests..."
     pytest -v
+coverage-test:
+    @echo "Coverage-test"
+    pytest --cov=app --cov-report=term-missing tests/

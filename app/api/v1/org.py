@@ -17,6 +17,11 @@ async def create_org(
 ):
     try:
         new_org = await org_service.create_org(org_create )
+        if not new_org:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Organization with this name already exists",
+            )
         return {"message": "Organization created successfully", "org_id": new_org}
     except Exception as e:
         raise HTTPException(

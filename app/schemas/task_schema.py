@@ -9,7 +9,6 @@ class PriorityEnum(str, Enum):
     MEDIUM = "MEDIUM"
     HIGH = "HIGH"
 
-
 class TaskStatus(str, Enum):
     TO_DO = "TO_DO"
     IN_PROGRESS = "IN_PROGRESS"

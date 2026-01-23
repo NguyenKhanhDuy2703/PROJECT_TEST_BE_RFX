@@ -17,7 +17,9 @@ async def create_project(
     project_service: ProjectService = Depends(get_project_service),
 ):
     try:
+      
         new_project = await project_service.create_project(project_create )
+    
         return {"message": "Project created successfully", "project_id": new_project.project_id}
     except Exception as e:
         raise HTTPException(
@@ -50,9 +52,12 @@ async def add_member_to_project (
 ):
     try :
         new_member = await project_service.add_user_to_project ( project_id , member_data , current_user )
+        if not new_member :
+            raise HTTPException (
+                status_code = status.HTTP_422_UNPROCESSABLE_ENTITY ,
+                detail = " Could not add member to project "
+            )
         return new_member
-    except HTTPException as http_exc :
-        raise http_exc
     except Exception as e :
         raise HTTPException (
             status_code = status.HTTP_400_BAD_REQUEST ,
