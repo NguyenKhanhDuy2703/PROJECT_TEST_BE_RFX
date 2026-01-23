@@ -3,7 +3,7 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = " PROJECT MANAGEMENT SYSTEM "
     POSTGRES_USER : str = "postgres"
     POSTGRES_PASSWORD : str = "123456"
-    POSTGRES_SERVER : str = "localhost"
+    POSTGRES_SERVER : str = "5433"
     POSTGRES_PORT : str = "5432"
     POSTGRES_DB : str = "rfx_db"
     REDIS_HOST: str = "localhost" 
