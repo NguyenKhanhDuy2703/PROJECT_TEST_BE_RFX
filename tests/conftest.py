@@ -16,51 +16,59 @@ from datetime import datetime, timezone , timedelta
 from unittest.mock import AsyncMock
 from app.core.redis import redis_client
 from sqlalchemy.pool import NullPool
-import os
 import sys
 from app.models import * 
-TEST_DATABASE_URL = "postgresql+asyncpg://postgres:123456@localhost:5432/rfx_db_test"
-
+import os
+TEST_DATABASE_URL = os.getenv(
+    "TEST_DATABASE_URL", 
+    "postgresql+asyncpg://postgres:123456@localhost:5432/rfx_db_test"
+)
 if sys.platform.startswith("win"):
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
-@pytest.fixture(scope="session")
-def event_loop():
-    loop = asyncio.new_event_loop()
-    yield loop
-    loop.close()
+
+
 @pytest_asyncio.fixture(scope="session")
 async def db_engine():
-   
     engine = create_async_engine(
         TEST_DATABASE_URL,
         echo=False,
-        pool_pre_ping=True,
         future=True,
-        poolclass=NullPool
+        poolclass=NullPool,
     )
+    
+    # Tạo bảng 1 lần duy nhất khi bắt đầu test
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
+        await conn.run_sync(Base.metadata.create_all)
+        
     yield engine
+    
+    # Dọn dẹp khi kết thúc toàn bộ test
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
     await engine.dispose()
 
 @pytest_asyncio.fixture(scope="function")
 async def db_session(db_engine):
-
-    async with db_engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
-        await conn.run_sync(Base.metadata.create_all)
-
-
-    TestingSessionLocal = sessionmaker(
-        bind=db_engine,
+    # Kết nối
+    connection = await db_engine.connect()
+    # Bắt đầu transaction
+    transaction = await connection.begin()
+    
+    # Tạo session gắn với connection này
+    SessionLocal = sessionmaker(
+        bind=connection,
         class_=AsyncSession,
         expire_on_commit=False,
         autoflush=False
     )
-
-    async with TestingSessionLocal() as session:
+    
+    async with SessionLocal() as session:
         yield session
-  
-    async with db_engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
+    
+    # Sau khi test xong, ROLLBACK lại mọi thay đổi -> DB sạch sẽ
+    await transaction.rollback()
+    await connection.close()
 
 @pytest_asyncio.fixture(scope="function")
 async def client(db_session):
