@@ -36,26 +36,21 @@ async def db_engine():
         poolclass=NullPool,
     )
     
-    # Tạo bảng 1 lần duy nhất khi bắt đầu test
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
         
     yield engine
-    
-    # Dọn dẹp khi kết thúc toàn bộ test
+
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
     await engine.dispose()
 
 @pytest_asyncio.fixture(scope="function")
 async def db_session(db_engine):
-    # Kết nối
     connection = await db_engine.connect()
-    # Bắt đầu transaction
     transaction = await connection.begin()
     
-    # Tạo session gắn với connection này
     SessionLocal = sessionmaker(
         bind=connection,
         class_=AsyncSession,
@@ -65,8 +60,7 @@ async def db_session(db_engine):
     
     async with SessionLocal() as session:
         yield session
-    
-    # Sau khi test xong, ROLLBACK lại mọi thay đổi -> DB sạch sẽ
+
     await transaction.rollback()
     await connection.close()
 
