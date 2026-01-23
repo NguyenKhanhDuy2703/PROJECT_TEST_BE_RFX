@@ -10,30 +10,33 @@ from app.models.organization import Organization
 from app.models.user import User , RoleEnum
 from app.models.project import Project
 from app.core.security import get_password_hash , create_access_token
+from app.models.task import Task, StatusEnum, PriorityEnum 
 import asyncio
-from datetime import datetime, timezone
+from datetime import datetime, timezone , timedelta
+from unittest.mock import AsyncMock
+from app.core.redis import redis_client
+from sqlalchemy.pool import NullPool
 import os
 import sys
 from app.models import * 
 TEST_DATABASE_URL = "postgresql+asyncpg://postgres:123456@localhost:5432/rfx_db_test"
 
-
+if sys.platform.startswith("win"):
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 @pytest.fixture(scope="session")
 def event_loop():
-    if sys.platform.startswith("win"):
-        asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
-    
     loop = asyncio.new_event_loop()
     yield loop
     loop.close()
-@pytest_asyncio.fixture(scope="function")
+@pytest_asyncio.fixture(scope="session")
 async def db_engine():
    
     engine = create_async_engine(
         TEST_DATABASE_URL,
         echo=False,
         pool_pre_ping=True,
-        future=True
+        future=True,
+        poolclass=NullPool
     )
     yield engine
     await engine.dispose()
@@ -50,6 +53,7 @@ async def db_session(db_engine):
         bind=db_engine,
         class_=AsyncSession,
         expire_on_commit=False,
+        autoflush=False
     )
 
     async with TestingSessionLocal() as session:
@@ -70,6 +74,17 @@ async def client(db_session):
         yield ac
         
     app.dependency_overrides.clear()
+@pytest_asyncio.fixture(scope="function", autouse=True)
+async def mock_redis():
+    redis_client.get = AsyncMock(return_value=None) 
+    redis_client.set = AsyncMock()
+    redis_client.incr = AsyncMock()
+    redis_client.lpush = AsyncMock()
+    redis_client.ltrim = AsyncMock()
+    redis_client.delete = AsyncMock()
+
+    yield redis_client
+
 
 # create fake object for testing
 
@@ -80,6 +95,7 @@ async def test_org(db_session):
     await db_session.commit()
     await db_session.refresh(org)
     return org
+
 @pytest_asyncio.fixture(scope="function")
 async def test_user_admin(db_session, test_org):
     admin_user = User(
@@ -94,6 +110,7 @@ async def test_user_admin(db_session, test_org):
     await db_session.commit()
     await db_session.refresh(admin_user)
     return admin_user
+
 @pytest_asyncio.fixture(scope="function")
 async def test_user_member(db_session, test_org):
     member_user = User(
@@ -108,6 +125,7 @@ async def test_user_member(db_session, test_org):
     await db_session.commit()
     await db_session.refresh(member_user)
     return member_user
+
 @pytest_asyncio.fixture(scope="function")
 async def test_user_manager(db_session, test_org):
     manager_user = User(
@@ -127,6 +145,7 @@ async def test_user_manager(db_session, test_org):
 async def admin_auth_headers(test_user_admin):
     access_token = create_access_token(
         data={
+            "sub": str(test_user_admin.user_id),
             "user_id": test_user_admin.user_id,
             "email": test_user_admin.email,
             "role": test_user_admin.role.value
@@ -138,6 +157,7 @@ async def admin_auth_headers(test_user_admin):
 async def manager_auth_headers(test_user_manager):
     access_token = create_access_token(
         data={
+            "sub": str(test_user_manager.user_id),
             "user_id": test_user_manager.user_id,
             "email": test_user_manager.email,
             "role": test_user_manager.role.value
@@ -150,6 +170,7 @@ async def manager_auth_headers(test_user_manager):
 async def member_auth_headers(test_user_member):
     access_token = create_access_token(
         data={
+            "sub": str(test_user_member.user_id),
             "user_id": test_user_member.user_id,
             "email": test_user_member.email,
             "role": test_user_member.role.value
@@ -170,15 +191,135 @@ async def test_project(db_session, test_org):
     await db_session.commit()
     await db_session.refresh(project)
     return project
+
 @pytest_asyncio.fixture(scope="function")
 async def test_project_member(db_session, test_project, test_user_member):
     from app.models.project_member import Project_member
+    
     project_member = Project_member(
         project_id=test_project.project_id,
         user_id=test_user_member.user_id,
-        joined_at  = datetime.now(timezone.utc).replace(tzinfo=None),
+        joined_at=datetime.now(timezone.utc).replace(tzinfo=None),
     )
     db_session.add(project_member)
     await db_session.commit()
     await db_session.refresh(project_member)
     return project_member
+
+@pytest_asyncio.fixture(scope="function")
+async def test_task_in_project(db_session, test_user_member, test_org):
+
+    # 1. Tạo Project
+    project = Project(
+        name="Fixture Project for Task",
+        description="A project for testing tasks",
+        org_id=test_org.org_id,
+        created_at=datetime.now(timezone.utc).replace(tzinfo=None)
+    )
+    db_session.add(project)
+    await db_session.commit()
+    await db_session.refresh(project)
+
+    # 2. Add Member vào Project
+    project_member = Project_member(
+        project_id=project.project_id,
+        user_id=test_user_member.user_id,
+        joined_at=datetime.now(timezone.utc).replace(tzinfo=None),
+    )
+    db_session.add(project_member)
+    await db_session.commit()
+    await db_session.refresh(project_member)
+
+    task = Task(
+        title="Fixture Task",
+        description="A task for testing",
+        project_id=project.project_id, 
+        priority=PriorityEnum.MEDIUM, 
+        status=StatusEnum.TO_DO,
+        due_date=(datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(days=7)),
+        assignee_id=test_user_member.user_id, 
+        create_by=test_user_member.user_id,
+        create_at=datetime.now(timezone.utc).replace(tzinfo=None)
+    )
+
+    db_session.add(task)
+    await db_session.commit()
+    await db_session.refresh(task)
+    
+    return task
+
+pytest_asyncio.fixture(scope="function")
+async def test_prepare_reports(db_session, test_user_admin, test_project):
+    project_member = Project_member(
+        project_id=test_project.project_id,
+        user_id=test_user_admin.user_id,
+        joined_at=datetime.now(timezone.utc).replace(tzinfo=None),
+    )
+    db_session.add(project_member)
+    await db_session.commit()
+    
+    tasks = []
+    for i in range(2):
+        task = Task(
+            title=f"Done Task {i+1}",
+            description="Finished task",
+            project_id=test_project.project_id,
+            priority=PriorityEnum.LOW,
+            status=StatusEnum.DONE,  # <--- Quan trọng
+            due_date=(datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(days=7)),
+            assignee_id=test_user_admin.user_id,
+            create_by=test_user_admin.user_id,
+            create_at=datetime.now(timezone.utc).replace(tzinfo=None)
+        )
+        db_session.add(task)
+        tasks.append(task)
+
+    for i in range(3):
+        task = Task(
+            title=f"Todo Task {i+1}",
+            description="Task waiting",
+            project_id=test_project.project_id,  
+            priority=PriorityEnum.MEDIUM,
+            status=StatusEnum.TO_DO, 
+            due_date=(datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(days=7)),
+            assignee_id=test_user_admin.user_id,
+            create_by=test_user_admin.user_id,
+            create_at=datetime.now(timezone.utc).replace(tzinfo=None)
+        )
+        db_session.add(task)
+        tasks.append(task)
+
+    task_over_due = Task(
+        title="Overdue Task",
+        description="This task is overdue",
+        project_id=test_project.project_id,
+        priority=PriorityEnum.HIGH,
+        status=StatusEnum.IN_PROGRESS, 
+        due_date=(datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(days=1)), 
+        assignee_id=test_user_admin.user_id,
+        create_by=test_user_admin.user_id,
+        create_at=datetime.now(timezone.utc).replace(tzinfo=None)
+    )
+    db_session.add(task_over_due)
+    tasks.append(task_over_due)
+
+    await db_session.commit()
+    for task in tasks:
+        await db_session.refresh(task)
+        
+    return tasks 
+@pytest_asyncio.fixture(scope="function")
+async def test_comment_in_task(db_session, test_task_in_project, test_user_member):
+    from app.models.comment import Comment
+    from datetime import datetime, timezone
+
+    comment = Comment(
+        task_id=test_task_in_project.task_id,
+        content="Comment for attachment testing",
+        user_id=test_user_member.user_id,
+        created_at=datetime.now(timezone.utc).replace(tzinfo=None)
+    )
+    db_session.add(comment)
+    await db_session.commit()
+    await db_session.refresh(comment)
+    return comment

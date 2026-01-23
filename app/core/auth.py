@@ -18,7 +18,7 @@ async def authenticate_user (token : str = Depends(oauth2_scheme) , db: AsyncSes
         check_user_id = await db.execute (select (User).where (User.user_id == payload.get("user_id") ) )
         user = check_user_id.scalars().first()
         if not user :
-            raise "User not found "
+           return None
         return user
     except Exception as e:
         raise HTTPException (
