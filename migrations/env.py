@@ -6,34 +6,9 @@ from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from alembic import context
-
-from app.config import settings
-
-from app.db.base import Base 
-
-from app.models import (user , organization , project , task , comment , attachment , project_member )
-
-config = context.config # get alembic config object
-
-config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
-
-if config.config_file_name is not None:
-    fileConfig(config.config_file_name)
-
-target_metadata = Base.metadata
-
-import asyncio
-from logging.config import fileConfig
-
-from sqlalchemy import pool
-from sqlalchemy.engine import Connection
-from sqlalchemy.ext.asyncio import async_engine_from_config
-
-from alembic import context
 from app.config import settings
 from app.db.base import Base 
 
-# Import đầy đủ models
 from app.models import (
     user, 
     organization, 
@@ -43,10 +18,8 @@ from app.models import (
     attachment, 
     project_member
 )
-# Lấy cấu hình Alembic
 config = context.config
 
-# Cập nhật URL Database
 config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
 
 if config.config_file_name is not None:
@@ -75,7 +48,6 @@ def do_run_migrations (connection : Connection) -> None:
     with context.begin_transaction():
         context.run_migrations()
 async def run_migrations_online() -> None:
-    # create async engine
     connectable = async_engine_from_config (
         config.get_section (config.config_ini_section ),
         prefix= "sqlalchemy.",
