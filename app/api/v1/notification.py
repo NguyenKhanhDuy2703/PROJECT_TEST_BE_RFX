@@ -18,5 +18,5 @@ async def get_notifications(
     db: AsyncSession = Depends(get_db)
 ):
     service = NotificationService(db)
-    notifications = await service.get_my_notifications(user_id=current_user.user_id, limit=limit, offset=offset)
+    notifications = await service.get_my_notifications( current_user, limit=limit, offset=offset)
     return notifications
